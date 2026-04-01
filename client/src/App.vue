@@ -4,6 +4,7 @@
     <!--
       On affiche l'écran de choix du pseudo TANT QUE pseudoConfirme est false.
       Dès que l'utilisateur valide son pseudo, on bascule sur l'écran du chat.
+      Je triche avec ChatGPT
     -->
     <div v-if="!pseudoConfirme" class="pseudo-screen">
       <h1>SioChat</h1>
