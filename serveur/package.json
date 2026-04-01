@@ -1,0 +1,13 @@
+{
+  "name": "siochat-serveur",
+  "version": "1.0.0",
+  "description": "Serveur Socket.IO pour SioChat",
+  "type": "module",
+  "main": "serveur.js",
+  "scripts": {
+    "start": "node serveur.js"
+  },
+  "dependencies": {
+    "socket.io": "^4.7.5"
+  }
+}

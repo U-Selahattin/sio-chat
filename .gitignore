@@ -1,0 +1,26 @@
+# Dépendances Node.js (trop lourdes pour GitHub)
+node_modules/
+*/node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Fichiers de build
+dist/
+build/
+
+# Variables d'environnement (données sensibles)
+.env
+.env.local
+.env.production
+
+# Cache Vite
+.vite/
+*/.vite/
+
+# Fichiers système macOS
+.DS_Store
+
+# Fichiers de configuration interne (à ne pas partager)
+.claude/
