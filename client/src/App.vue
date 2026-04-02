@@ -2,29 +2,32 @@
   <div class="container">
 
     <!-- page pour choisir son pseudo -->
-    <div v-if="!connecte">
-      <h1>SioChat</h1>
-      <form @submit.prevent="rejoindre">
-        <p>Entrez votre pseudo :</p>
-        <input v-model="pseudoSaisi" type="text" placeholder="Votre pseudo..." />
-        <br>
-        <button type="submit">Rejoindre</button>
+    <div v-if="!connecte" class="page-pseudo">
+      <h1>💬 SioChat</h1>
+      <p class="sous-titre">Application de chat en temps réel</p>
+      <form @submit.prevent="rejoindre" class="formulaire-pseudo">
+        <input v-model="pseudoSaisi" type="text" placeholder="Entrez votre pseudo..." />
+        <button type="submit">Rejoindre le chat</button>
       </form>
     </div>
 
     <!-- page du chat -->
     <div v-else>
-      <h1>SioChat - {{ monPseudo }}</h1>
+      <div class="entete">
+        <h1>💬 SioChat</h1>
+        <span class="badge-pseudo">{{ monPseudo }}</span>
+      </div>
 
-      <!-- affichage des messages -->
-      <ul id="liste-messages">
-        <li v-for="(msg, i) in listeMsgs" :key="i" :class="msg.auteur === monPseudo ? 'moi' : ''">
-          <b>{{ msg.auteur }}</b> : {{ msg.texte }}
+      <!-- liste des messages -->
+      <ul id="liste-messages" ref="listeRef">
+        <li v-for="(msg, i) in listeMsgs" :key="i" :class="msg.auteur === monPseudo ? 'moi' : 'autre'">
+          <span class="auteur">{{ msg.auteur }}</span>
+          <span class="texte">{{ msg.texte }}</span>
         </li>
       </ul>
 
-      <!-- formulaire envoi message -->
-      <form @submit.prevent="envoyerMessage">
+      <!-- formulaire envoi -->
+      <form @submit.prevent="envoyerMessage" class="formulaire-chat">
         <input v-model="msgSaisi" type="text" placeholder="Votre message..." autocomplete="off" />
         <button type="submit">Envoyer</button>
       </form>
@@ -34,7 +37,7 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { socket } from './socket/socketconnect';
 
 export default {
@@ -47,12 +50,12 @@ export default {
     const connecte = ref(false);
     const msgSaisi = ref('');
     const listeMsgs = ref([]);
+    const listeRef = ref(null);
 
     // quand on clique sur rejoindre
     function rejoindre() {
       if (pseudoSaisi.value == '') return;
       monPseudo.value = pseudoSaisi.value;
-      // on envoie le pseudo au serveur
       socket.emit('set pseudo', monPseudo.value);
       connecte.value = true;
     }
@@ -68,6 +71,12 @@ export default {
     onMounted(() => {
       socket.on('chat message', (msg) => {
         listeMsgs.value.push(msg);
+        // scroll automatique vers le bas
+        nextTick(() => {
+          if (listeRef.value) {
+            listeRef.value.scrollTop = listeRef.value.scrollHeight;
+          }
+        });
       });
     });
 
@@ -81,6 +90,7 @@ export default {
       connecte,
       msgSaisi,
       listeMsgs,
+      listeRef,
       rejoindre,
       envoyerMessage
     };
@@ -89,54 +99,139 @@ export default {
 </script>
 
 <style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 body {
+  background-color: #e8edf3;
   font-family: Arial, sans-serif;
-  background-color: #f0f0f0;
 }
 
 .container {
-  width: 500px;
-  margin: 50px auto;
-  background-color: white;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  width: 550px;
+  margin: 40px auto;
+  background: white;
+  border-radius: 8px;
+  padding: 25px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 h1 {
   text-align: center;
+  color: #2c3e50;
+  margin-bottom: 5px;
 }
 
-input {
-  padding: 8px;
-  width: 70%;
-  margin-right: 5px;
+/* --- page pseudo --- */
+.page-pseudo {
+  text-align: center;
 }
 
-button {
-  padding: 8px 15px;
+.sous-titre {
+  color: #888;
+  margin-bottom: 25px;
+  font-size: 14px;
+}
+
+.formulaire-pseudo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.formulaire-pseudo input {
+  width: 280px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 15px;
+}
+
+/* --- entete chat --- */
+.entete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.badge-pseudo {
   background-color: #4a90e2;
   color: white;
-  border: none;
-  cursor: pointer;
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 13px;
 }
 
+/* --- liste messages --- */
 #liste-messages {
   list-style: none;
-  padding: 0;
   border: 1px solid #ddd;
-  height: 300px;
+  border-radius: 5px;
+  height: 320px;
   overflow-y: auto;
-  margin-bottom: 10px;
+  padding: 10px;
+  margin-bottom: 12px;
+  background-color: #f9f9f9;
 }
 
 #liste-messages li {
-  padding: 8px;
-  border-bottom: 1px solid #eee;
+  padding: 7px 10px;
+  border-radius: 5px;
+  margin-bottom: 6px;
 }
 
-/* messages envoyes par moi en bleu */
+#liste-messages li.autre {
+  background-color: #fff;
+  border: 1px solid #eee;
+}
+
+/* mes messages en bleu */
 #liste-messages li.moi {
-  background-color: #d0e8ff;
+  background-color: #d6eaff;
+  border: 1px solid #b3d4f5;
+}
+
+.auteur {
+  font-weight: bold;
+  color: #4a90e2;
+  margin-right: 8px;
+}
+
+.texte {
+  color: #333;
+}
+
+/* --- formulaire chat --- */
+.formulaire-chat {
+  display: flex;
+  gap: 8px;
+}
+
+.formulaire-chat input {
+  flex: 1;
+  padding: 9px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+button {
+  padding: 9px 18px;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button:hover {
+  background-color: #357abd;
 }
 </style>
